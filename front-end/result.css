@@ -1,0 +1,32 @@
+body {
+    font-family: Arial, sans-serif;
+    text-align: center;
+    background-color: #f0f0f0;
+}
+
+.container {
+    margin-top: 50px;
+}
+
+h1 {
+    font-size: 2.5em;
+}
+
+h2 {
+    font-size: 1.5em;
+}
+
+.origin-movie-title {
+    font-size: 2em;
+    text-align: center; /* Space between title and poster */
+    white-space: pre-wrap; /* Preserve whitespace */
+    overflow-wrap: break-word; /* Break long words */
+    max-width: 250px; /* Limit width for better wrapping */
+    margin-top: 75px;
+}
+
+.origin-movie-poster {
+    width: 175px; /* Fixed width of the poster */
+    height: 250px; /* Fixed height of the poster */
+    text-align: center;
+}
