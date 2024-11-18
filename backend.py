@@ -28,23 +28,81 @@ def genre_search():
     response = requests.get(url, headers=HEADERS)
     return jsonify(response.json())
 
+
 # Route /title-search?title={str}
 @app.route("/title-search", methods=["GET"])
 def title_search():
     title = request.args.get('title')
     url = f"https://api.themoviedb.org/3/search/movie?include_adult=false&original_language=en&query={title}"
     response = requests.get(url, headers=HEADERS)
-    return jsonify(response.json())
+    data = response.json()
+    # Filter out movies without a poster
+    filtered_results = [movie for movie in data['results'] if movie.get('poster_path')]
+    return jsonify({'results': filtered_results})
 
-# Route /random
+
 @app.route("/random", methods=["GET"])
 def randomMovie():
-    randomIndex = random.randint(0, len(GENRES)-1)
-    randomID = GENRES[randomIndex]
-    randomYear = random.randint(1940, 2024)
-    url = f"https://api.themoviedb.org/3/discover/movie?include_adult=false&include_video=false&with_original_language=en&sort_by=popularity.desc&with_genres={randomID}&primary_release_year={randomYear}"
+    base_url = "https://api.themoviedb.org/3/discover/movie"
+
+    while True:
+        # Set parameters for the API call
+        params = {
+            "language": "en-US",
+            "include_adult": "false",
+            "vote_count.gte": 100,  # Only movies with 500+ votes
+            "page": random.randint(1, 500)  # Random page between 1 and 500 for variety
+        }
+
+        # Make the API call with the random page parameter
+        response = requests.get(base_url, headers=HEADERS, params=params)
+
+        # Check if the response is successful and has results
+        if response.status_code == 200:
+            movies_data = response.json().get("results", [])
+
+            # Filter out movies that do not have a poster_path
+            movies_with_posters = [movie for movie in movies_data if movie.get("poster_path")]
+
+            if movies_with_posters:
+                # Pick a random movie from the list of movies that have posters
+                movie_data = random.choice(movies_with_posters)
+                return jsonify(movie_data)
+            else:
+                # If no movies with posters were found on this page, retry with a new page
+                continue
+        else:
+            return jsonify({"error": "Failed to retrieve movies from API."}), response.status_code
+
+
+@app.route("/movie-details", methods=["GET"])
+def movie_details(): 
+    movie_id = request.args.get('movie_id')
+    url = f"https://api.themoviedb.org/3/movie/{movie_id}?language=en-US"
     response = requests.get(url, headers=HEADERS)
     return jsonify(response.json())
+
+
+# Route to get similar movies (Recommendations) based on a given movie_id
+@app.route("/movie-recommendations", methods=["GET"])
+def movie_recommendations():
+    movie_id = request.args.get('movie_id')  # Get movie_id from query parameter
+    url = f"https://api.themoviedb.org/3/movie/{movie_id}/recommendations?language=en-US"
+    response = requests.get(url, headers=HEADERS)
+
+    # Check if the API response is successful
+    if response.status_code == 200:
+        recommendations_data = response.json().get("results", [])
+
+        # Filter out movies that do not have a poster
+        recommendations_with_posters = [
+            movie for movie in recommendations_data if movie.get("poster_path")
+        ]
+
+        return jsonify({"results": recommendations_with_posters})
+    else:
+        return jsonify({"error": "Failed to retrieve movie recommendations from API."}), response.status_code
+
 
 # Run the app
 if __name__ == "__main__":
