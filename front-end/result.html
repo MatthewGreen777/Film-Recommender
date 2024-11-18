@@ -7,12 +7,20 @@
     <link rel="stylesheet" href="result.css">
 </head>
 <body>
+    <button class="back-button" onclick="goBack()">Back</button>
     <div class="container">
-        <h1><a href="index.html">New Search</a></h1>
-        <div class="movie-details" id="movie-details">
-            <!-- Movie details will be dynamically generated here -->
+        <h1><a href="index.html">Home Page</a></h1>
+        <div class="movie-main" id="movie-main">
+            <!-- Main movie details will be dynamically generated here -->
         </div>
+        <div class="related-movies" id="related-movies">
+            <div class="related-movies-container">
+                <!-- Related movie posters will be dynamically generated here -->
+            </div>
+        </div>        
     </div>
+        <!-- Dark Mode Toggle Button -->
+        <button id="darkModeToggle">Toggle Dark Mode</button>
     <script src="result.js"></script>
 </body>
 </html>

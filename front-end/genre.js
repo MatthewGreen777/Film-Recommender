@@ -1,4 +1,12 @@
+console.log(JSON.parse(localStorage.getItem('movieResults')));
+
 document.addEventListener('DOMContentLoaded', () => {
+
+    // Apply dark mode if it's stored in localStorage
+    if (localStorage.getItem('darkMode') === 'enabled') {
+        document.body.classList.add('dark-mode');
+    }
+
     const resultsContainer = document.getElementById('Movie Details');
     const movieResults = JSON.parse(localStorage.getItem('movieResults'));
     const currentPage = parseInt(localStorage.getItem('currentPage')) || 1;
@@ -26,7 +34,7 @@ document.addEventListener('DOMContentLoaded', () => {
             poster.src = `https://image.tmdb.org/t/p/w500${movie.poster_path}`;
             button.appendChild(poster);
             posterContainer.onclick = () => {
-                resultPage(genreId, genreName, movie)
+                resultPage(movie.id, movie.title);
             };
 
             posterContainer.appendChild(button);
@@ -91,12 +99,22 @@ document.addEventListener('DOMContentLoaded', () => {
     } else {
         resultsContainer.textContent = 'No results found.';
     }
+    // Dark Mode toggle button
+    document.getElementById('darkModeToggle').addEventListener('click', toggleDarkMode);
 });
 
 // Fetch the results page
-function resultPage(genreId, genreName, movie) {
-    console.log(movie.title);
+function resultPage(movieId, movieTitle) {
+    fetch(`/movie-details?movie_id=${movieId}`) 
+        .then(response => response.json())
+        .then(data => {
+            localStorage.setItem('selectedMovieDetails', JSON.stringify(data));
+            localStorage.setItem('movieTitle', movieTitle);
+            window.location.href = 'result.html';
+        })
+        .catch(error => console.error('Error fetching result page:', error));
 }
+
 
 // Fetch the previous page of movies
 function fetchPreviousPage(genreId, genreName, page) {
@@ -122,4 +140,22 @@ function fetchNextPage(genreId, genreName, page) {
             window.location.href = 'genre.html'; // Reload the page to display the next set of results
         })
         .catch(error => console.error('Error fetching next page:', error));
+}
+
+// Function to toggle dark mode
+function toggleDarkMode() {
+    const body = document.body;
+    
+    // Check if dark mode is already active
+    if (body.classList.contains('dark-mode')) {
+        // If dark mode is active, remove the class and return to light mode
+        body.classList.remove('dark-mode');
+        // Remove dark mode from localStorage
+        localStorage.setItem('darkMode', 'disabled');
+    } else {
+        // If dark mode is not active, add the class and apply dark mode styles
+        body.classList.add('dark-mode');
+        // Save dark mode to localStorage
+        localStorage.setItem('darkMode', 'enabled');
+    }
 }

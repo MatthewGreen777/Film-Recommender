@@ -21,6 +21,12 @@ const genres = [
 ];
 
 document.addEventListener('DOMContentLoaded', () => {
+
+    // Check if dark mode was previously enabled in localStorage
+    if (localStorage.getItem('darkMode') === 'enabled') {
+        document.body.classList.add('dark-mode');
+    }
+
     const genreButtonsContainer = document.getElementById('genre-buttons');
     genres.forEach(genre => {
         const button = document.createElement('button');
@@ -28,26 +34,34 @@ document.addEventListener('DOMContentLoaded', () => {
         button.onclick = () => getMoviesByGenre(genre.id, genre.name);
         genreButtonsContainer.appendChild(button);
     });
+    
+    // Add event listener for the Enter key in the search input
+    const searchInput = document.getElementById('search');
+    searchInput.addEventListener('keypress', (event) => {
+        if (event.key === 'Enter') { // Check if the pressed key is Enter
+            event.preventDefault(); // Prevent the default form submission if it's inside a form
+            searchMovie(); // Call the search function
+        }
+    });
 
-        // Add event listener for the Enter key in the search input
-        const searchInput = document.getElementById('search');
-        searchInput.addEventListener('keypress', (event) => {
-            if (event.key === 'Enter') { // Check if the pressed key is Enter
-                event.preventDefault(); // Prevent the default form submission if it's inside a form
-                searchMovie(); // Call the search function
-            }
-        });
+    // Dark Mode toggle button
+    document.getElementById('darkModeToggle').addEventListener('click', toggleDarkMode);
 });
 
-function getRandomMovie() {
-    fetch(`/random`)
+// Function to get a random movie
+function getRandomMovie(movieId) {
+    fetch(`/random?movie_id=${movieId}`)
         .then(response => response.json())
         .then(data => {
-            localStorage.setItem('movieResults', JSON.stringify(data.results));
+            // Store the main movie details correctly in localStorage
+            localStorage.setItem('selectedMovieDetails', JSON.stringify(data));
+            // Redirect to the result page
             window.location.href = 'result.html';
-        });
+        })
+        .catch(error => console.error('Error getting movies:', error));
 }
 
+// Function to get movies by genre
 function getMoviesByGenre(genreId, genreName) {
     fetch(`/genre-search?genre=${genreId}`)
         .then(response => response.json())
@@ -62,6 +76,7 @@ function getMoviesByGenre(genreId, genreName) {
         .catch(error => console.error('Error fetching movies:', error));
 }
 
+// Function to search for a movie
 function searchMovie() {
     const query = document.getElementById('search').value;
     fetch(`/title-search?title=${query}`)
@@ -69,5 +84,24 @@ function searchMovie() {
         .then(data => {
             localStorage.setItem('movieResults', JSON.stringify(data.results));
             window.location.href = 'confirmation.html';
-        });
+        })
+        .catch(error => console.error('Error fetching movies:', error));
+}
+
+// Function to toggle dark mode
+function toggleDarkMode() {
+    const body = document.body;
+    
+    // Check if dark mode is already active
+    if (body.classList.contains('dark-mode')) {
+        // If dark mode is active, remove the class and return to light mode
+        body.classList.remove('dark-mode');
+        // Remove dark mode from localStorage
+        localStorage.setItem('darkMode', 'disabled');
+    } else {
+        // If dark mode is not active, add the class and apply dark mode styles
+        body.classList.add('dark-mode');
+        // Save dark mode to localStorage
+        localStorage.setItem('darkMode', 'enabled');
+    }
 }
